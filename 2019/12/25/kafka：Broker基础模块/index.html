@@ -46,27 +46,36 @@
   };
 </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="SocketServer模块 建立Socket，保持和客户端的通信 准发客户端的Request 返回Response给客户端 通过RequestChannel与其他模块解耦  KafkaRequestHandlerPoolkafkaRequestHandlerPool本质上市一个线程池，默认包含8个IO处理线程 kafkaRequestHandlerkafkaRequestHandler需要从Re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafka：Broker基础模块">
+<meta property="og:url" content="http://yoursite.com/2019/12/25/kafka%EF%BC%9ABroker%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="SocketServer模块 建立Socket，保持和客户端的通信 准发客户端的Request 返回Response给客户端 通过RequestChannel与其他模块解耦  KafkaRequestHandlerPoolkafkaRequestHandlerPool本质上市一个线程池，默认包含8个IO处理线程 kafkaRequestHandlerkafkaRequestHandler需要从Re">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://assets.processon.com/chart_image/5cc119eae4b085d01084919e.png">
+<meta property="og:image" content="http://assets.processon.com/chart_image/5c3f28c1e4b0f430ae0552c7.png">
+<meta property="og:image" content="http://assets.processon.com/chart_image/5d4ab0f0e4b0423002bd8057.png">
+<meta property="article:published_time" content="2019-12-25T13:20:27.000Z">
+<meta property="article:modified_time" content="2019-12-25T13:21:21.077Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="kafka">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://assets.processon.com/chart_image/5cc119eae4b085d01084919e.png">
 
-<link rel="canonical" href="http://yoursite.com/">
+<link rel="canonical" href="http://yoursite.com/2019/12/25/kafka%EF%BC%9ABroker%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false
+    isHome: false,
+    isPost: true
   };
 </script>
 
-  <title>Hexo</title>
+  <title>kafka：Broker基础模块 | Hexo</title>
   
 
 
@@ -161,10 +170,10 @@
             
 
   <div class="posts-expand">
-        
+      
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/25/kafka%EF%BC%9ABroker%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -178,8 +187,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/25/kafka%EF%BC%9ABroker%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">kafka：Broker基础模块</a>
+          kafka：Broker基础模块
         </h1>
 
         <div class="post-meta">
@@ -204,7 +212,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="SocketServer模块"><a href="#SocketServer模块" class="headerlink" title="SocketServer模块"></a>SocketServer模块</h2><ul>
+        <h2 id="SocketServer模块"><a href="#SocketServer模块" class="headerlink" title="SocketServer模块"></a>SocketServer模块</h2><ul>
 <li>建立Socket，保持和客户端的通信</li>
 <li>准发客户端的Request</li>
 <li>返回Response给客户端</li>
@@ -390,151 +398,36 @@
 <h4 id="topic配置在线修改"><a href="#topic配置在线修改" class="headerlink" title="topic配置在线修改"></a>topic配置在线修改</h4><p>kafka提供了对topic配置的在线修改能力，修改完成无需重启kafka集群在线生效。<br>Topic的配置参数位于zk上，路径为/config/topics/[topic],brokers/changes目录记录更新变化</p>
 <h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p> kafkaApis处理具体业务逻辑，利用LogManage，Replicamanage，OffsetManage，KafkaHealthcheck，四大模块完成具体业务，Broker对外暴露了11条通信协议</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/kafka/" rel="tag"># kafka</a>
+          </div>
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/25/kafka/">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/25/kafka/" class="post-title-link" itemprop="url">kafka</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-12-25 21:09:22" itemprop="dateCreated datePublished" datetime="2019-12-25T21:09:22+08:00">2019-12-25</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/25/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/25/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-12-25 21:07:08" itemprop="dateCreated datePublished" datetime="2019-12-25T21:07:08+08:00">2019-12-25</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/25/kafka/" rel="prev" title="kafka">
+      <i class="fa fa-chevron-left"></i> kafka
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
   
 
   </div>
-
-  
-
 
 
           </div>
@@ -585,6 +478,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SocketServer模块"><span class="nav-number">1.</span> <span class="nav-text">SocketServer模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#KafkaRequestHandlerPool"><span class="nav-number">1.1.</span> <span class="nav-text">KafkaRequestHandlerPool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafkaRequestHandler"><span class="nav-number">1.2.</span> <span class="nav-text">kafkaRequestHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafkaApis"><span class="nav-number">1.3.</span> <span class="nav-text">kafkaApis</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Message"><span class="nav-number">1.4.</span> <span class="nav-text">Message</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Message物理格式"><span class="nav-number">1.4.1.</span> <span class="nav-text">Message物理格式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafka读写message特点"><span class="nav-number">1.5.</span> <span class="nav-text">kafka读写message特点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#写message"><span class="nav-number">1.5.1.</span> <span class="nav-text">写message</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#logManager"><span class="nav-number">1.5.2.</span> <span class="nav-text">logManager</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#logSegment"><span class="nav-number">1.5.2.1.</span> <span class="nav-text">logSegment</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafka的消息读取"><span class="nav-number">1.6.</span> <span class="nav-text">kafka的消息读取</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#logManager的启动"><span class="nav-number">1.6.1.</span> <span class="nav-text">logManager的启动</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReplicaManager"><span class="nav-number">1.7.</span> <span class="nav-text">ReplicaManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OffsetManager"><span class="nav-number">1.8.</span> <span class="nav-text">OffsetManager</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Consumer偏移量的保存"><span class="nav-number">1.8.1.</span> <span class="nav-text">Consumer偏移量的保存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#consumer偏移量的读取"><span class="nav-number">1.8.2.</span> <span class="nav-text">consumer偏移量的读取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#compact-策略"><span class="nav-number">1.8.3.</span> <span class="nav-text">compact 策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kafkaScheduler"><span class="nav-number">1.8.4.</span> <span class="nav-text">kafkaScheduler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KafkaApis模块"><span class="nav-number">1.8.5.</span> <span class="nav-text">KafkaApis模块</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ProducerRequest"><span class="nav-number">1.8.6.</span> <span class="nav-text">ProducerRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FetchRequest"><span class="nav-number">1.8.7.</span> <span class="nav-text">FetchRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OffsetRequest"><span class="nav-number">1.8.8.</span> <span class="nav-text">OffsetRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TopicMetadataRequest"><span class="nav-number">1.8.9.</span> <span class="nav-text">TopicMetadataRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LeaderAndIsrRequest"><span class="nav-number">1.8.10.</span> <span class="nav-text">LeaderAndIsrRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#StopReplicaREquest"><span class="nav-number">1.8.11.</span> <span class="nav-text">StopReplicaREquest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UpdateMetadataRequest"><span class="nav-number">1.8.12.</span> <span class="nav-text">UpdateMetadataRequest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#读取offset"><span class="nav-number">1.8.13.</span> <span class="nav-text">读取offset</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#kafka健康状态"><span class="nav-number">1.8.14.</span> <span class="nav-text">kafka健康状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#topic配置在线修改"><span class="nav-number">1.8.15.</span> <span class="nav-text">topic配置在线修改</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">1.9.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
