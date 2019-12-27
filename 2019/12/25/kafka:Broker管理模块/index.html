@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="KafkaController是kafka集群的控制管理模块，虽然每个broker内部都会存在一个kafkaController模块，但只有一个broker的KafkaController模块会对外提供kafka集群管理功能。如：topic的创建，分区的重分配，以及分区副本的leader重新选举。需要搞清楚kafkaController之间的选举策略，kafkaController的初始化，ka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="kafka：Broker控制管理模块">
+<meta property="og:url" content="http://yoursite.com/2019/12/25/kafka:Broker%E7%AE%A1%E7%90%86%E6%A8%A1%E5%9D%97/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="KafkaController是kafka集群的控制管理模块，虽然每个broker内部都会存在一个kafkaController模块，但只有一个broker的KafkaController模块会对外提供kafka集群管理功能。如：topic的创建，分区的重分配，以及分区副本的leader重新选举。需要搞清楚kafkaController之间的选举策略，kafkaController的初始化，ka">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-12-25T13:09:22.000Z">
+<meta property="article:modified_time" content="2019-12-27T07:12:44.775Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/25/kafka:Broker%E7%AE%A1%E7%90%86%E6%A8%A1%E5%9D%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>kafka：Broker控制管理模块 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-fw fa-calendar"></i>日程表</a>
+
+  </li>
+        <li class="menu-item menu-item-sitemap">
+
+    <a href="/sitemap.xml" rel="section"><i class="fa fa-fw fa-sitemap"></i>站点地图</a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-fw fa-heartbeat"></i>公益 404</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/25/kafka:Broker%E7%AE%A1%E7%90%86%E6%A8%A1%E5%9D%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          kafka：Broker控制管理模块
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-25 21:09:22" itemprop="dateCreated datePublished" datetime="2019-12-25T21:09:22+08:00">2019-12-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-27 15:12:44" itemprop="dateModified" datetime="2019-12-27T15:12:44+08:00">2019-12-27</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>KafkaController是kafka集群的控制管理模块，虽然每个broker内部都会存在一个kafkaController模块，但只有一个broker的KafkaController模块会对外提供kafka集群管理功能。如：topic的创建，分区的重分配，以及分区副本的leader重新选举。需要搞清楚kafkaController之间的选举策略，kafkaController的初始化，kafkaController的维护分区状态，kafkaController内部的监听器。kafkaCOntroller提供的负载均衡机制，<br>Topic删除机制，以及kafkaController之间的通信原理。</p>
+</blockquote>
+<h3 id="选举策略"><a href="#选举策略" class="headerlink" title="选举策略"></a>选举策略</h3><p>kafka brokerServer都会启动kafkaController，但是只有一个会成为leader状态，其余都是follower状态。kafkaController模块的leader和follower的选举都是基于zk实现的。kafkaController模块运行起来会在zk相同路径建立瞬时节点，但只有一个节点建立成功。</p>
+<p> zk Hang异常处理，检测实际数据和准备写入数据是否一致，如果一致，则是相同客户端不同链接写入导致，如果不一致，则是不同客户端写入导致。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><h4 id="Leader状态下kafkaController的初始化"><a href="#Leader状态下kafkaController的初始化" class="headerlink" title="Leader状态下kafkaController的初始化"></a>Leader状态下kafkaController的初始化</h4><ol>
+<li>初始kafka集群内部的始终，具体数值存放在zookeeper，broker server利用此值区分请求的时效性。</li>
+<li>注册各种监听函数</li>
+<li>初始化kafka集群内部原数据信息</li>
+<li>启动负载均衡线程 默认开启</li>
+<li>启动topic删除线程，默认关闭<h4 id="Standby状态下的kafkaController初始化"><a href="#Standby状态下的kafkaController初始化" class="headerlink" title="Standby状态下的kafkaController初始化"></a>Standby状态下的kafkaController初始化</h4>。。。</li>
+</ol>
+<h3 id="topic的分区状态转换机制"><a href="#topic的分区状态转换机制" class="headerlink" title="topic的分区状态转换机制"></a>topic的分区状态转换机制</h3><h3 id="Topic分区的领导者副本选举策略"><a href="#Topic分区的领导者副本选举策略" class="headerlink" title="Topic分区的领导者副本选举策略"></a>Topic分区的领导者副本选举策略</h3><p>Topic分区的leader Replica在不同的场景下的选举策略是不一样的<br>目前共有5重不同发的选举策略</p>
+<table>
+<thead>
+<tr>
+<th>选举策略名称</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NoOpLeaderSelector</td>
+<td>默认的选举策略</td>
+</tr>
+<tr>
+<td>ReassignedPartitionLeaderSelector</td>
+<td>当分区的AR重新分配时使用的策略</td>
+</tr>
+<tr>
+<td>OfflinePartitionLeaderSelector</td>
+<td>集群内部自动平衡负载或者用户手动触发负载平衡</td>
+</tr>
+<tr>
+<td>ControlledShutdownloadLeaderSelector</td>
+<td>Leader状态的KafkaCOntroller处理其他Broker Server 下线导致分区的LeaderReplica 发生切换时的使用</td>
+</tr>
+</tbody></table>
+<h3 id="Topic分区的副本状态转换机制"><a href="#Topic分区的副本状态转换机制" class="headerlink" title="Topic分区的副本状态转换机制"></a>Topic分区的副本状态转换机制</h3><h3 id="kafkaController内部监听器"><a href="#kafkaController内部监听器" class="headerlink" title="kafkaController内部监听器"></a>kafkaController内部监听器</h3><h3 id="kafka集群负载均衡流程"><a href="#kafka集群负载均衡流程" class="headerlink" title="kafka集群负载均衡流程"></a>kafka集群负载均衡流程</h3><h3 id="kafka-Topic删除流程"><a href="#kafka-Topic删除流程" class="headerlink" title="kafka Topic删除流程"></a>kafka Topic删除流程</h3><h3 id="kafkaController通信模块"><a href="#kafkaController通信模块" class="headerlink" title="kafkaController通信模块"></a>kafkaController通信模块</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2019/12/25/kafka%EF%BC%9ABroker%E5%9F%BA%E7%A1%80%E6%A8%A1%E5%9D%97/" rel="next" title="kafka：Broker基础模块">
+      kafka：Broker基础模块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#选举策略"><span class="nav-number">1.</span> <span class="nav-text">选举策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">2.</span> <span class="nav-text">初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Leader状态下kafkaController的初始化"><span class="nav-number">2.1.</span> <span class="nav-text">Leader状态下kafkaController的初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Standby状态下的kafkaController初始化"><span class="nav-number">2.2.</span> <span class="nav-text">Standby状态下的kafkaController初始化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#topic的分区状态转换机制"><span class="nav-number">3.</span> <span class="nav-text">topic的分区状态转换机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Topic分区的领导者副本选举策略"><span class="nav-number">4.</span> <span class="nav-text">Topic分区的领导者副本选举策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Topic分区的副本状态转换机制"><span class="nav-number">5.</span> <span class="nav-text">Topic分区的副本状态转换机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafkaController内部监听器"><span class="nav-number">6.</span> <span class="nav-text">kafkaController内部监听器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafka集群负载均衡流程"><span class="nav-number">7.</span> <span class="nav-text">kafka集群负载均衡流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafka-Topic删除流程"><span class="nav-number">8.</span> <span class="nav-text">kafka Topic删除流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kafkaController通信模块"><span class="nav-number">9.</span> <span class="nav-text">kafkaController通信模块</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.6.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
